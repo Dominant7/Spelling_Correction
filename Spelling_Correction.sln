@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34221.43
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "Spelling_Correction", "Spelling_Correction\Spelling_Correction.pyproj", "{7F25263C-BE1E-47FB-B3EE-799E5AEAD388}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7F25263C-BE1E-47FB-B3EE-799E5AEAD388}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F25263C-BE1E-47FB-B3EE-799E5AEAD388}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B2A25D51-19AC-414C-84D2-01F9374E0CA1}
+	EndGlobalSection
+EndGlobal
