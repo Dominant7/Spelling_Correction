@@ -1,38 +1,91 @@
 import nltk
 
 # 生成所有编辑距离为1的单词(不含分词与合词)
-def edit_distance_1(word):
-    letters    = 'abcdefghijklmnopqrstuvwxyz'
+def edit_distance_1(word, uniqueChars, confusion_matrices, countDict):
+    probDict = {}
+    letters    = uniqueChars
     splits     = [(word[:i], word[i:]) for i in range(len(word) + 1)]
-    deletes    = [L + R[1:] for L, R in splits if R]
-    transposes = [L + R[1] + R[0] + R[2:] for L, R in splits if len(R) > 1]
-    replaces   = [L + c + R[1:] for L, R in splits if R for c in letters]
-    inserts    = [L + c + R for L, R in splits for c in letters + '-']
-    return set(deletes + transposes + replaces + inserts)
+    # 生成时delete等于输错时insert
+    deletes = []
+    delProb = []
+    transposes = []
+    transProb = []
+    replaces = []
+    subProb = []
+    inserts = []
+    insProb = []
+    for L, R in splits:
+        if R:
+            deletes.append(L + R[1:])
+            delProb.append(confusion_matrices['ins'][L[-1], R[0]] / countDict[L[-1]])
+        else:
+            pass
+    
+    for L, R in splits:
+        if len(R) > 1:
+            transposes.append(L + R[1] + R[0] + R[2:])
+            transProb.append(confusion_matrices['trans'][R[1], R[0]] / countDict[R[1] +  R[0]])
+        else:
+            pass
+        
+    for L, R in splits:
+        if R:
+            for c in letters:
+                replaces.append(L + c + R[1:])
+                subProb.append(confusion_matrices['sub'][c, R[0]] / countDict[c])
+        else:
+            pass
+    
+    # 同理，生成insert等于delete
+    for L, R in splits:
+        for c in letters:
+            inserts.append(L + c + R)
+            insProb.append(confusion_matrices['del'][L[-1], c] / countDict[L[-1] + c])
+    
+    return deletes + transposes + replaces + inserts, delProb + transProb + subProb + insProb
 
-def edit_distance_2(word):
-    return (e2 for e1 in edit_distance_1(word) for e2 in edit_distance_1(e1))
+# 返回距离为1和2的字典
+def edit_distance_2(word, uniqueChars, confusion_matrices, countDict):
+    e1, e1Prob = edit_distance_1(word, uniqueChars, confusion_matrices, countDict)
+    e2 = []
+    e2Prob = []
+    i = 0
+    for e in e1:
+        e2_temp, e2Prob_temp = edit_distance_1(e)
+        e2.append(e2_temp)
+        e2Prob_temp =  [a * e1Prob[i] for a in e2Prob_temp]
+        e2Prob.append(e2Prob_temp)
+        i += 1
+    e2.append(e1)
+    e2Prob.append(e1Prob)
+    return dict(zip(e2, e2Prob))
+#    return (e2 for e1 in edit_distance_1(word) for e2 in edit_distance_1(e1))
 
-# 查找词汇表中与目标词编辑距离为1的所有单词
-def find_candidates(word, vocabulary):
-    candidates = edit_distance_1(word)
-    return candidates.intersection(vocabulary)
+# 返回在词汇表中的单词词典
+def wordsInVocab(wordsDict, vocabulary):
+    filteredDict = {}
+    for key in vocabulary:
+        if key in wordsDict:
+            filteredDict[key] = wordsDict[key]
+    return filteredDict
 
 # 生成分词后两部分都为词的单词组
 
 # 生成融合两部分后得到的为词的单词组
 
-def generateCandidate(word):
+def generateCandidate(word, uniqueChars, confusion_matrices, epsilon, countDict):
     vocab = []
-    candidate = []
+    candidate = {}
     with open('vocab.txt', 'r', encoding='utf-8') as f:
         for line in f:
             vocabWord = line.strip()
             vocab.append(vocabWord)
+    wordsDict = edit_distance_2(word, uniqueChars, confusion_matrices, countDict)
+    candidate = wordsInVocab(wordsDict, vocab)
     if word in vocab:
         # 真词错误
-        candidate = find_candidates(word, vocab) + word
+        candidate.append({word:1 - epsilon})
     else:
         # 非词错误
-        candidate = find_candidates(word, vocab)
+        pass
     return candidate

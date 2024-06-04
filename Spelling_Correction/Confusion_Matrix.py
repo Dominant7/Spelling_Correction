@@ -83,7 +83,7 @@ def saveConfusionMatrices(matrices, chars, output_prefix, count_dict):
         writer.writerow(count_dict.keys())
         writer.writerow(count_dict.values())
 
-def createConfusionMartrix(confusionDataPath, confusionDataOutputPath):
+def createConfusionMatrix(confusionDataPath, confusionDataOutputPath):
     # Read the confusion data from the file
     confusionDict, countDict = readConfusionData(confusionDataPath)
 
@@ -97,3 +97,4 @@ def createConfusionMartrix(confusionDataPath, confusionDataOutputPath):
     print("Unique characters:", uniqueChars)
     print("Confusion matrix:")
     print(confusionMatrix)
+    return uniqueChars

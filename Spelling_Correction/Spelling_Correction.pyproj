@@ -23,7 +23,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Candidate_Word_Generate.py" />
-    <Compile Include="Confusion_Martrix.py" />
+    <Compile Include="Confusion_Matrix.py" />
     <Compile Include="LM_Generate.py" />
     <Compile Include="Spelling_Correction.py" />
   </ItemGroup>
