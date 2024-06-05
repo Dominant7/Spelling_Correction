@@ -95,6 +95,15 @@ def createConfusionMatrix(confusionDataPath, confusionDataOutputPath):
 
     # Print the confusion matrix and unique characters (optional)
     print("Unique characters:", uniqueChars)
-    print("Confusion matrix:")
-    print(confusionMatrix)
     return uniqueChars
+
+def readConfusionMatrix(confusionDataPath='./'):
+    # 读取特定操作类型的混淆矩阵CSV文件
+    opType = ['del', 'ins', 'sub', 'trans', 'count']
+    confusionMatrix = {}
+    for op in opType:
+        if op == 'count':
+            confusionMatrix['count'] = (pd.read_csv(f'{confusionDataPath}_count.csv', header=None)).to_dict()
+        else:
+            confusionMatrix[op] = (pd.read_csv(f'{confusionDataPath}_{op}.csv', index_col=0)).to_dict()
+    return confusionMatrix

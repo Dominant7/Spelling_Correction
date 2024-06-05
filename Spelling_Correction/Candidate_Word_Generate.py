@@ -1,4 +1,5 @@
 import nltk
+import math
 
 # 生成所有编辑距离为1的单词(不含分词与合词)
 def edit_distance_1(word, uniqueChars, confusion_matrices, countDict):
@@ -17,14 +18,14 @@ def edit_distance_1(word, uniqueChars, confusion_matrices, countDict):
     for L, R in splits:
         if R:
             deletes.append(L + R[1:])
-            delProb.append(confusion_matrices['ins'][L[-1], R[0]] / countDict[L[-1]])
+            delProb.append(math.log(confusion_matrices['ins'][L[-1], R[0]]) - math.log(countDict[L[-1]])) # 以对数存储概率
         else:
             pass
     
     for L, R in splits:
         if len(R) > 1:
             transposes.append(L + R[1] + R[0] + R[2:])
-            transProb.append(confusion_matrices['trans'][R[1], R[0]] / countDict[R[1] +  R[0]])
+            transProb.append(math.log(confusion_matrices['trans'][R[1], R[0]]) - math.log(countDict[R[1] +  R[0]]))
         else:
             pass
         
@@ -32,7 +33,7 @@ def edit_distance_1(word, uniqueChars, confusion_matrices, countDict):
         if R:
             for c in letters:
                 replaces.append(L + c + R[1:])
-                subProb.append(confusion_matrices['sub'][c, R[0]] / countDict[c])
+                subProb.append(math.log(confusion_matrices['sub'][c, R[0]]) - math.log(countDict[c]))
         else:
             pass
     
@@ -40,8 +41,8 @@ def edit_distance_1(word, uniqueChars, confusion_matrices, countDict):
     for L, R in splits:
         for c in letters:
             inserts.append(L + c + R)
-            insProb.append(confusion_matrices['del'][L[-1], c] / countDict[L[-1] + c])
-    
+            insProb.append(math.log(confusion_matrices['del'][L[-1], c]) - math.log(countDict[L[-1] + c]))
+    # 此处返回概率为对数
     return deletes + transposes + replaces + inserts, delProb + transProb + subProb + insProb
 
 # 返回距离为1和2的字典
@@ -53,7 +54,7 @@ def edit_distance_2(word, uniqueChars, confusion_matrices, countDict):
     for e in e1:
         e2_temp, e2Prob_temp = edit_distance_1(e)
         e2.append(e2_temp)
-        e2Prob_temp =  [a * e1Prob[i] for a in e2Prob_temp]
+        e2Prob_temp =  [a + e1Prob[i] for a in e2Prob_temp] # 对数概率，故为加法
         e2Prob.append(e2Prob_temp)
         i += 1
     e2.append(e1)
@@ -67,6 +68,10 @@ def wordsInVocab(wordsDict, vocabulary):
     for key in vocabulary:
         if key in wordsDict:
             filteredDict[key] = wordsDict[key]
+        elif set(nltk.word_tokenize(key)).issubset(vocabulary):
+            filteredDict[key] = wordsDict[key]
+        else:
+            pass
     return filteredDict
 
 # 生成分词后两部分都为词的单词组
@@ -84,7 +89,7 @@ def generateCandidate(word, uniqueChars, confusion_matrices, epsilon, countDict)
     candidate = wordsInVocab(wordsDict, vocab)
     if word in vocab:
         # 真词错误
-        candidate.append({word:1 - epsilon})
+        candidate.append({word:math.log(1 - epsilon)})
     else:
         # 非词错误
         pass
