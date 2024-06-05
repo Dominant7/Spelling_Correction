@@ -1,8 +1,8 @@
 import subprocess
-def getSentenceProb(sentence, LMPath='LM\\train_model.lm', vocabPath='vocab.txt', order=3):
+def getSentenceProb(sentence, LMPath='LM\\train_model.lm', vocabPath='vocab.txt', order='3'):
     # 使用ngram命令计算句子的概率
     cmd = [
-        'ngram',
+        'SRILM\\For PC\\ngram.exe',
         '-ppl', '-',  # 从标准输入读取句子
         '-lm', LMPath,  # 语言模型文件
         '-vocab', vocabPath,  # 词汇表文件
@@ -18,6 +18,5 @@ def getSentenceProb(sentence, LMPath='LM\\train_model.lm', vocabPath='vocab.txt'
         if 'logprob=' in line:
             log_prob = float(line.split('logprob=')[1].split()[0])
             break
-        else:
-            print('Error in getting sentence probability!')
+    print(log_prob)
     return log_prob

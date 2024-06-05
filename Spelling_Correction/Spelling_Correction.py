@@ -1,4 +1,3 @@
-import torch
 import numpy
 import nltk
 import LM_Generate
@@ -8,12 +7,13 @@ import Sentence_Probability
 
 # 宏变量
 EPSILON = 0.005 # 总出错概率 
-FILE_PATH = 'testdata.txt'
+FILE_PATH = 'test_data_small.txt'
 OUTPUT_FILE_PATH = 'ans.txt'
 
 #LM_Generate.LMDataConvert()
 #LM_Generate.LMTrain()
-uniqueChars = Confusion_Matrix.createConfusionMatrix('count_1edit.txt', 'ConfusionMatrix.csv')
+uniqueChars = Confusion_Matrix.createConfusionMatrix('count_1edit.txt', 'ConfusionMatrix')
+uniqueChars.remove('0')
 confusionMatrix = Confusion_Matrix.readConfusionMatrix()
 errorNums = []
 with open(FILE_PATH, mode='r', encoding='utf-8') as file, \

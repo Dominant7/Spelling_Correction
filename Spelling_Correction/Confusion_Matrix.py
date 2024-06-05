@@ -1,3 +1,4 @@
+from nltk.metrics import confusionmatrix
 import pandas as pd
 import numpy as np
 from collections import defaultdict
@@ -35,9 +36,8 @@ def readConfusionData(filename):
                     confusion_dict['del'][(x, y)] = count
                 elif len(x) == 2 and len(y) == 2:
                     confusion_dict['trans'][(x, y)] = count
-                count_dict[x] += count
-                count_dict[x + y] += count
-
+                # x为错误项，y为正确项（存疑）
+                count_dict[y] += count
     return confusion_dict, count_dict;
 
 def generateConfusionMatrix(confusion_dict):
@@ -97,13 +97,19 @@ def createConfusionMatrix(confusionDataPath, confusionDataOutputPath):
     print("Unique characters:", uniqueChars)
     return uniqueChars
 
-def readConfusionMatrix(confusionDataPath='./'):
+def readConfusionMatrix(confusionDataPath='./ConfusionMatrix'):
     # 读取特定操作类型的混淆矩阵CSV文件
     opType = ['del', 'ins', 'sub', 'trans', 'count']
     confusionMatrix = {}
     for op in opType:
         if op == 'count':
-            confusionMatrix['count'] = (pd.read_csv(f'{confusionDataPath}_count.csv', header=None)).to_dict()
+            #confusionMatrix['count'] = (pd.read_csv(f'{confusionDataPath}_count.csv', header=None)).to_dict()
+            df = pd.read_csv(f'{confusionDataPath}_count.csv', header=None)
+            confusionMatrix['count'] = dict(zip(df.iloc[0], df.iloc[1].astype(int)))
+            confusionMatrixCountDefaultDict = defaultdict(int)
+            for key, value in confusionMatrix['count'].items():
+                confusionMatrixCountDefaultDict[key] = value
+            confusionMatrix['count'] = confusionMatrixCountDefaultDict
         else:
             confusionMatrix[op] = (pd.read_csv(f'{confusionDataPath}_{op}.csv', index_col=0)).to_dict()
     return confusionMatrix
