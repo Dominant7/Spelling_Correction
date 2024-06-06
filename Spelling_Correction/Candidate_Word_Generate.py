@@ -77,7 +77,8 @@ def wordsInVocab(wordsDict, vocabulary):
     for key in wordsDict:
         if key in vocabulary:
             filteredDict[key] = wordsDict[key]
-        elif set(nltk.word_tokenize(key)).issubset(vocabulary):
+#        elif set(nltk.word_tokenize(key)).issubset(vocabulary): # 这个改成自己写，nltk分词太多了，只需要保留空格分词即可
+        elif set(key.split(' ')).issubset(vocabulary):
             filteredDict[key] = wordsDict[key]
         else:
             pass
@@ -87,19 +88,24 @@ def wordsInVocab(wordsDict, vocabulary):
 
 # 生成融合两部分后得到的为词的单词组
 
-def generateCandidate(word, uniqueChars, confusion_matrices, epsilon, countDict):
-    vocab = []
+def generateCandidate(word, uniqueChars, confusion_matrices, epsilon, vocab, countDict, detectRealWordError=False):
     candidate = {}
-    with open('vocab.txt', 'r', encoding='utf-8') as f:
-        for line in f:
-            vocabWord = line.strip()
-            vocab.append(vocabWord.lower())
-    wordsDict = edit_distance_2(word, uniqueChars, confusion_matrices, countDict)
-    candidate = wordsInVocab(wordsDict, vocab)
-    if word in vocab:
-        # 真词错误
-        candidate.append({word:logSmoothed(1 - epsilon)})
+    if detectRealWordError: # 加个检测首字母大写
+        #    wordsDict = edit_distance_2(word, uniqueChars, confusion_matrices, countDict)
+        e1, e1Prob = edit_distance_1(word, uniqueChars, confusion_matrices, countDict) # 试一试编辑距离1
+        wordsDict = dict(zip(e1, e1Prob))
+        candidate = wordsInVocab(wordsDict, vocab)
+        if word.lower() in vocab:
+            # 真词错误
+            candidate.update({word:logSmoothed(1 - epsilon)})
+        else:
+            # 非词错误
+            pass
     else:
-        # 非词错误
-        pass
+        if word.lower() in vocab:
+            pass
+        else:
+            e1, e1Prob = edit_distance_1(word, uniqueChars, confusion_matrices, countDict)
+            wordsDict = dict(zip(e1, e1Prob))
+            candidate = wordsInVocab(wordsDict, vocab)
     return candidate

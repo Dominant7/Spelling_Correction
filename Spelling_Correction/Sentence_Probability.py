@@ -18,5 +18,5 @@ def getSentenceProb(sentence, LMPath='LM\\train_model.lm', vocabPath='vocab.txt'
         if 'logprob=' in line:
             log_prob = float(line.split('logprob=')[1].split()[0])
             break
-    print(log_prob)
+    print(sentence + '\nProb :' + str(log_prob))
     return log_prob
