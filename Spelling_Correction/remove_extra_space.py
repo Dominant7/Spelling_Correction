@@ -6,8 +6,10 @@ def remove_consecutive_spaces(file_path):
     # 创建一个新文件来存储结果
     with open('cleaned_' + file_path, 'w', encoding='utf-8') as file:
         for line in lines:
+            seriesNum, sentence = line.split('\t')
             # 替换当前行中的连续空格为单个空格
-            cleaned_line = ' '.join(line.split())
+            cleaned_line = ' '.join(sentence.split())
+            cleaned_line = seriesNum + '\t' + cleaned_line
             # 写入清理后的行，保留换行符
             file.write(cleaned_line + '\n')
 

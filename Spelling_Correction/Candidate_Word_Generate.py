@@ -1,15 +1,15 @@
-import nltk
+ï»¿import nltk
 import math
 
 def logSmoothed(num, epsilon=1e-6):
     return math.log(num + epsilon)
 
-# Éú³ÉËùÓĞ±à¼­¾àÀëÎª1µÄµ¥´Ê(²»º¬·Ö´ÊÓëºÏ´Ê)
+# ç”Ÿæˆæ‰€æœ‰ç¼–è¾‘è·ç¦»ä¸º1çš„å•è¯(ä¸å«åˆ†è¯ä¸åˆè¯)
 def edit_distance_1(word, uniqueChars, confusion_matrices, countDict):
     probDict = {}
     letters    = uniqueChars
     splits     = [(word[:i].lower(), word[i:].lower()) for i in range(len(word) + 1)]
-    # Éú³ÉÊ±deleteµÈÓÚÊä´íÊ±insert
+    # ç”Ÿæˆæ—¶deleteç­‰äºè¾“é”™æ—¶insert
     deletes = []
     delProb = []
     transposes = []
@@ -18,13 +18,14 @@ def edit_distance_1(word, uniqueChars, confusion_matrices, countDict):
     subProb = []
     inserts = []
     insProb = []
+    '''
     for L, R in splits:
         if R:
             deletes.append(L + R[1:])
             if L:
-                delProb.append(logSmoothed(confusion_matrices['ins'][L[-1]][R[0]]) - logSmoothed(countDict[L[-1]])) # ÒÔ¶ÔÊı´æ´¢¸ÅÂÊ
+                delProb.append(logSmoothed(confusion_matrices['ins'][L[-1]][R[0]]) - logSmoothed(countDict[L[-1]])) # ä»¥å¯¹æ•°å­˜å‚¨æ¦‚ç‡
             else:
-                delProb.append(logSmoothed(confusion_matrices['ins']['>'][R[0]]) - logSmoothed(countDict['>'])) # ¾ä×Ó¿ªÍ·Îª>(´æÒÉ)
+                delProb.append(logSmoothed(confusion_matrices['ins']['>'][R[0]]) - logSmoothed(countDict['>'])) # å¥å­å¼€å¤´ä¸º>(å­˜ç–‘)
         else:
             pass
     
@@ -43,18 +44,53 @@ def edit_distance_1(word, uniqueChars, confusion_matrices, countDict):
         else:
             pass
     
-    # Í¬Àí£¬Éú³ÉinsertµÈÓÚdelete
+    # åŒç†ï¼Œç”Ÿæˆinsertç­‰äºdelete
     for L, R in splits:
         for c in letters:
             inserts.append(L + c + R)
             if L:
                 insProb.append(logSmoothed(confusion_matrices['del'][L[-1]][c]) - logSmoothed(countDict[L[-1] + c]))
             else:
-                insProb.append(logSmoothed(confusion_matrices['del']['>'][c]) - logSmoothed(countDict['>' + c])) # ¾ä×Ó¿ªÍ·Îª>(´æÒÉ)
-    # ´Ë´¦·µ»Ø¸ÅÂÊÎª¶ÔÊı
+                insProb.append(logSmoothed(confusion_matrices['del']['>'][c]) - logSmoothed(countDict['>' + c])) # å¥å­å¼€å¤´ä¸º>(å­˜ç–‘)
+    '''
+    # åç€è¯»æ··æ·†çŸ©é˜µ
+    for L, R in splits:
+        if R:
+            deletes.append(L + R[1:])
+            if L:
+                delProb.append(logSmoothed(confusion_matrices['ins'][R[0]][L[-1]]) - logSmoothed(countDict[L[-1]])) # ä»¥å¯¹æ•°å­˜å‚¨æ¦‚ç‡
+            else:
+                delProb.append(logSmoothed(confusion_matrices['ins'][R[0]]['>']) - logSmoothed(countDict['>'])) # å¥å­å¼€å¤´ä¸º>(å­˜ç–‘)
+        else:
+            pass
+    
+    for L, R in splits:
+        if len(R) > 1:
+            transposes.append(L + R[1] + R[0] + R[2:])
+            transProb.append(logSmoothed(confusion_matrices['trans'][R[0]][R[1]]) - logSmoothed(countDict[R[1] +  R[0]]))
+        else:
+            pass
+        
+    for L, R in splits:
+        if R:
+            for c in letters:
+                replaces.append(L + c + R[1:])
+                subProb.append(logSmoothed(confusion_matrices['sub'][R[0]][c]) - logSmoothed(countDict[c]))
+        else:
+            pass
+    
+    # åŒç†ï¼Œç”Ÿæˆinsertç­‰äºdelete
+    for L, R in splits:
+        for c in letters:
+            inserts.append(L + c + R)
+            if L:
+                insProb.append(logSmoothed(confusion_matrices['del'][c][L[-1]]) - logSmoothed(countDict[L[-1] + c]))
+            else:
+                insProb.append(logSmoothed(confusion_matrices['del'][c]['>']) - logSmoothed(countDict['>' + c])) # å¥å­å¼€å¤´ä¸º>(å­˜ç–‘)
+    # æ­¤å¤„è¿”å›æ¦‚ç‡ä¸ºå¯¹æ•°
     return deletes + transposes + replaces + inserts, delProb + transProb + subProb + insProb
 
-# ·µ»Ø¾àÀëÎª1ºÍ2µÄ×Öµä
+# è¿”å›è·ç¦»ä¸º1å’Œ2çš„å­—å…¸
 def edit_distance_2(word, uniqueChars, confusion_matrices, countDict):
     e1, e1Prob = edit_distance_1(word, uniqueChars, confusion_matrices, countDict)
     e2 = []
@@ -63,7 +99,7 @@ def edit_distance_2(word, uniqueChars, confusion_matrices, countDict):
     for e in e1:
         e2_temp, e2Prob_temp = edit_distance_1(e, uniqueChars, confusion_matrices, countDict)
         e2.extend(e2_temp)
-        e2Prob_temp =  [a + e1Prob[i] for a in e2Prob_temp] # ¶ÔÊı¸ÅÂÊ£¬¹ÊÎª¼Ó·¨
+        e2Prob_temp =  [a + e1Prob[i] for a in e2Prob_temp] # å¯¹æ•°æ¦‚ç‡ï¼Œæ•…ä¸ºåŠ æ³•
         e2Prob.extend(e2Prob_temp)
         i += 1
     e2.extend(e1)
@@ -71,35 +107,35 @@ def edit_distance_2(word, uniqueChars, confusion_matrices, countDict):
     return dict(zip(e2, e2Prob))
 #    return (e2 for e1 in edit_distance_1(word) for e2 in edit_distance_1(e1))
 
-# ·µ»ØÔÚ´Ê»ã±íÖĞµÄµ¥´Ê´Êµä
+# è¿”å›åœ¨è¯æ±‡è¡¨ä¸­çš„å•è¯è¯å…¸
 def wordsInVocab(wordsDict, vocabulary):
     filteredDict = {}
     for key in wordsDict:
         if key in vocabulary:
             filteredDict[key] = wordsDict[key]
-#        elif set(nltk.word_tokenize(key)).issubset(vocabulary): # Õâ¸ö¸Ä³É×Ô¼ºĞ´£¬nltk·Ö´ÊÌ«¶àÁË£¬Ö»ĞèÒª±£Áô¿Õ¸ñ·Ö´Ê¼´¿É
+#        elif set(nltk.word_tokenize(key)).issubset(vocabulary): # è¿™ä¸ªæ”¹æˆè‡ªå·±å†™ï¼Œnltkåˆ†è¯å¤ªå¤šäº†ï¼Œåªéœ€è¦ä¿ç•™ç©ºæ ¼åˆ†è¯å³å¯
         elif set(key.split(' ')).issubset(vocabulary):
             filteredDict[key] = wordsDict[key]
         else:
             pass
     return filteredDict
 
-# Éú³É·Ö´ÊºóÁ½²¿·Ö¶¼Îª´ÊµÄµ¥´Ê×é
+# ç”Ÿæˆåˆ†è¯åä¸¤éƒ¨åˆ†éƒ½ä¸ºè¯çš„å•è¯ç»„
 
-# Éú³ÉÈÚºÏÁ½²¿·ÖºóµÃµ½µÄÎª´ÊµÄµ¥´Ê×é
+# ç”Ÿæˆèåˆä¸¤éƒ¨åˆ†åå¾—åˆ°çš„ä¸ºè¯çš„å•è¯ç»„
 
 def generateCandidate(word, uniqueChars, confusion_matrices, epsilon, vocab, countDict, detectRealWordError=False):
     candidate = {}
-    if detectRealWordError: # ¼Ó¸ö¼ì²âÊ××ÖÄ¸´óĞ´
+    if detectRealWordError: # åŠ ä¸ªæ£€æµ‹é¦–å­—æ¯å¤§å†™
         #    wordsDict = edit_distance_2(word, uniqueChars, confusion_matrices, countDict)
-        e1, e1Prob = edit_distance_1(word, uniqueChars, confusion_matrices, countDict) # ÊÔÒ»ÊÔ±à¼­¾àÀë1
+        e1, e1Prob = edit_distance_1(word, uniqueChars, confusion_matrices, countDict) # è¯•ä¸€è¯•ç¼–è¾‘è·ç¦»1
         wordsDict = dict(zip(e1, e1Prob))
         candidate = wordsInVocab(wordsDict, vocab)
         if word.lower() in vocab:
-            # Õæ´Ê´íÎó
+            # çœŸè¯é”™è¯¯
             candidate.update({word:logSmoothed(1 - epsilon)})
         else:
-            # ·Ç´Ê´íÎó
+            # éè¯é”™è¯¯
             pass
     else:
         if word.lower() in vocab:

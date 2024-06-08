@@ -1,13 +1,13 @@
-import subprocess
+ï»¿import subprocess
 def getSentenceProb(sentence, LMPath='LM\\train_model.lm', vocabPath='vocab.txt', order='3'):
-    # Ê¹ÓÃngramÃüÁî¼ÆËã¾ä×ÓµÄ¸ÅÂÊ
+    # ä½¿ç”¨ngramå‘½ä»¤è®¡ç®—å¥å­çš„æ¦‚ç‡
     cmd = [
         'SRILM\\For PC\\ngram.exe',
-        '-ppl', '-',  # ´Ó±ê×¼ÊäÈë¶ÁÈ¡¾ä×Ó
-        '-lm', LMPath,  # ÓïÑÔÄ£ĞÍÎÄ¼ş
-        '-vocab', vocabPath,  # ´Ê»ã±íÎÄ¼ş
-        '-order', order, # ½×Êı
-        '-debug', '2'  # Êä³öÏêÏ¸ĞÅÏ¢
+        '-ppl', '-',  # ä»æ ‡å‡†è¾“å…¥è¯»å–å¥å­
+        '-lm', LMPath,  # è¯­è¨€æ¨¡å‹æ–‡ä»¶
+        '-vocab', vocabPath,  # è¯æ±‡è¡¨æ–‡ä»¶
+        '-order', order, # é˜¶æ•°
+        '-debug', '2'  # è¾“å‡ºè¯¦ç»†ä¿¡æ¯
     ]
     
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)

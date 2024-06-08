@@ -1,4 +1,4 @@
-from nltk.metrics import confusionmatrix
+锘縡rom nltk.metrics import confusionmatrix
 import pandas as pd
 import numpy as np
 from collections import defaultdict
@@ -36,7 +36,7 @@ def readConfusionData(filename):
                     confusion_dict['del'][(x, y)] = count
                 elif len(x) == 2 and len(y) == 2:
                     confusion_dict['trans'][(x, y)] = count
-                # x为错误项，y为正确项（存疑）
+                # x涓洪敊璇」锛寉涓烘纭」锛堝瓨鐤戯級
                 count_dict[y] += count
     return confusion_dict, count_dict;
 
@@ -94,11 +94,11 @@ def createConfusionMatrix(confusionDataPath, confusionDataOutputPath):
     saveConfusionMatrices(confusionMatrix, uniqueChars, confusionDataOutputPath, countDict)
 
     # Print the confusion matrix and unique characters (optional)
-    print("Unique characters:", uniqueChars)
+    #print("Unique characters:", uniqueChars)
     return uniqueChars
 
 def readConfusionMatrix(confusionDataPath='./ConfusionMatrix'):
-    # 读取特定操作类型的混淆矩阵CSV文件
+    # 璇诲彇鐗瑰畾鎿嶄綔绫诲瀷鐨勬贩娣嗙煩闃礐SV鏂囦欢
     opType = ['del', 'ins', 'sub', 'trans', 'count']
     confusionMatrix = {}
     for op in opType:

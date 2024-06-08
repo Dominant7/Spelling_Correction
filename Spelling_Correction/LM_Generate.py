@@ -1,4 +1,4 @@
-from nltk import sent_tokenize
+ï»¿from nltk import sent_tokenize
 
 
 def LMDataConvert():
@@ -8,69 +8,69 @@ def LMDataConvert():
     from nltk.tokenize import word_tokenize
     import os
 
-    # Êä³öÀà±ð
+    # è¾“å‡ºç±»åˆ«
     print(reuters.categories())
     
-    # »ñÈ¡ËùÓÐÎÄµµµÄÎÄ¼þIDÁÐ±í
+    # èŽ·å–æ‰€æœ‰æ–‡æ¡£çš„æ–‡ä»¶IDåˆ—è¡¨
     fileids = reuters.fileids()
 
-    # »ñÈ¡ÑµÁ·¼¯ºÍ²âÊÔ¼¯µÄÎÄ¼þIDÁÐ±í
+    # èŽ·å–è®­ç»ƒé›†å’Œæµ‹è¯•é›†çš„æ–‡ä»¶IDåˆ—è¡¨
     train_fileids = [fileid for fileid in fileids if fileid.startswith('training')]
     test_fileids = [fileid for fileid in fileids if fileid.startswith('test')]
 
-    # ´´½¨Ò»¸öÄ¿Â¼À´±£´æ´¦Àí¹ýµÄÎÄ±¾ÎÄ¼þ
+    # åˆ›å»ºä¸€ä¸ªç›®å½•æ¥ä¿å­˜å¤„ç†è¿‡çš„æ–‡æœ¬æ–‡ä»¶
     test_dir = 'LM\\'
     train_dir = 'LM\\'
     os.makedirs(test_dir, exist_ok=True)
     os.makedirs(train_dir, exist_ok=True)
 
-    # »ñÈ¡Ó¢ÓïÍ£ÓÃ´ÊÁÐ±í
+    # èŽ·å–è‹±è¯­åœç”¨è¯åˆ—è¡¨
     stop_words = set(stopwords.words('english'))
 
-    # ´´½¨ÎÄ¼þ
+    # åˆ›å»ºæ–‡ä»¶
     with open('LM\\test.txt', 'w', encoding='utf-8') as f:
         pass
     with open('LM\\train.txt', 'w', encoding='utf-8') as f:
         pass
 
-    # ´¦ÀíÃ¿¸öÎÄ¼þ£¬²¢±£´æµ½ÎÄ±¾ÎÄ¼þÖÐ
+    # å¤„ç†æ¯ä¸ªæ–‡ä»¶ï¼Œå¹¶ä¿å­˜åˆ°æ–‡æœ¬æ–‡ä»¶ä¸­
     for fileid in test_fileids:
-        # »ñÈ¡ÎÄ±¾ÄÚÈÝ
+        # èŽ·å–æ–‡æœ¬å†…å®¹
         text = reuters.raw(fileid)
-        # ·Ö¾ä
+        # åˆ†å¥
         sentences = sent_tokenize(text)
         for sentence in sentences:
-            # ·Ö´Ê
+            # åˆ†è¯
             tokens = word_tokenize(sentence)
-            # È¥³ýÍ£ÓÃ´Ê²¢Á¬½Ó³É×Ö·û´®
+            # åŽ»é™¤åœç”¨è¯å¹¶è¿žæŽ¥æˆå­—ç¬¦ä¸²
             filtered_text = ' '.join(word for word in tokens if word.lower() not in stop_words)
-            # ±£´æ´¦ÀíºóµÄÎÄ±¾µ½ÎÄ¼þ
+            # ä¿å­˜å¤„ç†åŽçš„æ–‡æœ¬åˆ°æ–‡ä»¶
             output_file = os.path.join(test_dir, 'test.txt')
             with open(output_file, 'a', encoding='utf-8') as f:
                 f.write(filtered_text + '\n')
             
     for fileid in train_fileids:
-        # »ñÈ¡ÎÄ±¾ÄÚÈÝ
+        # èŽ·å–æ–‡æœ¬å†…å®¹
         text = reuters.raw(fileid)
-        # ·Ö¾ä
+        # åˆ†å¥
         sentences = sent_tokenize(text)
         for sentence in sentences:
-            # ·Ö´Ê
+            # åˆ†è¯
             tokens = word_tokenize(sentence)
-            # È¥³ýÍ£ÓÃ´Ê²¢Á¬½Ó³É×Ö·û´®
+            # åŽ»é™¤åœç”¨è¯å¹¶è¿žæŽ¥æˆå­—ç¬¦ä¸²
             filtered_text = ' '.join(word for word in tokens if word.lower() not in stop_words)
-            # ±£´æ´¦ÀíºóµÄÎÄ±¾µ½ÎÄ¼þ
+            # ä¿å­˜å¤„ç†åŽçš„æ–‡æœ¬åˆ°æ–‡ä»¶
             output_file = os.path.join(train_dir, 'train.txt')
             with open(output_file, 'a', encoding='utf-8') as f:
                 f.write(filtered_text + '\n')
 
 def LMTrain():
     import subprocess
-    # ¹¹½¨´Ê»ã±í
+    # æž„å»ºè¯æ±‡è¡¨
     subprocess.run(['SRILM\\For PC\\ngram-count', '-text', 'LM\\train.txt', '-order', '3', '-write', 'LM\\count.txt'])
-    # ÑµÁ·ÓïÑÔÄ£ÐÍ
+    # è®­ç»ƒè¯­è¨€æ¨¡åž‹
     subprocess.run(['SRILM\\For PC\\ngram-count', '-read', 'LM\\count.txt', '-order', '3', '-lm', 'LM\\train_model.lm', '-interpolate', '-kndiscount'])
 #    subprocess.run(['SRILM\\For PC\\ngram', '-ppl', 'LM\\test_result.txt', '-order', '3', '-lm', 'LM\\train_model.lm', '>', 'LM\\test_result.ppl'])
-    # ¼ÆËãÀ§»ó¶È²¢½«½á¹ûÊä³öµ½ÎÄ¼þ
+    # è®¡ç®—å›°æƒ‘åº¦å¹¶å°†ç»“æžœè¾“å‡ºåˆ°æ–‡ä»¶
     with open('LM\\test_result.ppl', 'w') as out_file:
         subprocess.run(['SRILM\\For PC\\ngram', '-lm', 'LM\\train_model.lm', '-ppl', 'LM\\test.txt', '-order', '3'], stdout=out_file)
