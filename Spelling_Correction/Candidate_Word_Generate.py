@@ -58,16 +58,16 @@ def edit_distance_1(word, uniqueChars, confusion_matrices, countDict):
         if R:
             deletes.append(L + R[1:])
             if L:
-                delProb.append(logSmoothed(confusion_matrices['ins'][R[0]][L[-1]]) - logSmoothed(countDict[L[-1]])) # 以对数存储概率
+                delProb.append(logSmoothed(confusion_matrices['ins'][R[0]].get(L[-1], 0)) - logSmoothed(countDict[L[-1]])) # 以对数存储概率
             else:
-                delProb.append(logSmoothed(confusion_matrices['ins'][R[0]]['>']) - logSmoothed(countDict['>'])) # 句子开头为>(存疑)
+                delProb.append(logSmoothed(confusion_matrices['ins'][R[0]].get('>', 0)) - logSmoothed(countDict['>'])) # 句子开头为>(存疑)
         else:
             pass
     
     for L, R in splits:
         if len(R) > 1:
             transposes.append(L + R[1] + R[0] + R[2:])
-            transProb.append(logSmoothed(confusion_matrices['trans'][R[0]][R[1]]) - logSmoothed(countDict[R[1] +  R[0]]))
+            transProb.append(logSmoothed(confusion_matrices['trans'][R[0]].get(R[1])) - logSmoothed(countDict[R[1] +  R[0]]))
         else:
             pass
         
@@ -75,7 +75,7 @@ def edit_distance_1(word, uniqueChars, confusion_matrices, countDict):
         if R:
             for c in letters:
                 replaces.append(L + c + R[1:])
-                subProb.append(logSmoothed(confusion_matrices['sub'][R[0]][c]) - logSmoothed(countDict[c]))
+                subProb.append(logSmoothed(confusion_matrices['sub'][R[0]].get(c, 0)) - logSmoothed(countDict[c]))
         else:
             pass
     
@@ -84,9 +84,9 @@ def edit_distance_1(word, uniqueChars, confusion_matrices, countDict):
         for c in letters:
             inserts.append(L + c + R)
             if L:
-                insProb.append(logSmoothed(confusion_matrices['del'][c][L[-1]]) - logSmoothed(countDict[L[-1] + c]))
+                insProb.append(logSmoothed(confusion_matrices['del'][c].get(L[-1], 0)) - logSmoothed(countDict[L[-1] + c]))
             else:
-                insProb.append(logSmoothed(confusion_matrices['del'][c]['>']) - logSmoothed(countDict['>' + c])) # 句子开头为>(存疑)
+                insProb.append(logSmoothed(confusion_matrices['del'][c].get('>', 0)) - logSmoothed(countDict['>' + c])) # 句子开头为>(存疑)
     # 此处返回概率为对数
     return deletes + transposes + replaces + inserts, delProb + transProb + subProb + insProb
 
@@ -124,12 +124,14 @@ def wordsInVocab(wordsDict, vocabulary):
 
 # 生成融合两部分后得到的为词的单词组
 
-def generateCandidate(word, uniqueChars, confusion_matrices, epsilon, vocab, countDict, detectRealWordError=False):
+def generateCandidate(word, uniqueChars, confusion_matrices, epsilon, vocab, countDict, detectRealWordError=False, editDistance=1):
     candidate = {}
     if detectRealWordError: 
-        #    wordsDict = edit_distance_2(word, uniqueChars, confusion_matrices, countDict)
-        e1, e1Prob = edit_distance_1(word, uniqueChars, confusion_matrices, countDict) # 试一试编辑距离1
-        wordsDict = dict(zip(e1, e1Prob))
+        if editDistance == 1:
+            e1, e1Prob = edit_distance_1(word, uniqueChars, confusion_matrices, countDict)
+            wordsDict = dict(zip(e1, e1Prob))
+        else:
+            wordsDict = edit_distance_2(word, uniqueChars, confusion_matrices, countDict)
         candidate = wordsInVocab(wordsDict, vocab)
     else:
         if word.lower() in vocab:

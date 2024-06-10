@@ -137,6 +137,7 @@ with open(FILE_PATH, mode='r', encoding='utf-8') as file, \
 
 '''
 
+
 import numpy
 import nltk
 import LM_Generate
@@ -148,13 +149,14 @@ from multiprocessing import freeze_support
 
 # 宏变量
 EPSILON = 0.05  # 总出错概率
-FILE_PATH = 'test_data.txt'
+FILE_PATH = 'testdata.txt'
 OUTPUT_FILE_PATH = 'result.txt'
 VOCABULARY_PATH = 'vocab.txt'
-REAL_WORD_DETECTION = True  # 是否检测真词错误
+REAL_WORD_DETECTION = False  # 是否检测真词错误
+EDIT_DISTANCE = 2 # 生成最大编辑距离
 
-#LM_Generate.LMDataConvert(False)
-#LM_Generate.LMTrain()
+# LM_Generate.LMDataConvert(False)
+# LM_Generate.LMTrain()
 uniqueChars = Confusion_Matrix.createConfusionMatrix('count_1edit.txt', 'ConfusionMatrix')
 uniqueChars.remove('0')
 confusionMatrix = Confusion_Matrix.readConfusionMatrix()
@@ -171,7 +173,7 @@ def getCandidateWithProb(words, detectRealWordError=False):
         if word in PUNCTUATION_LIST:  # 分词得到的标点符号进行生成词会出现问题
             candidateDict = {}
         else:
-            candidateDict = Candidate_Word_Generate.generateCandidate(word, uniqueChars, confusionMatrix, EPSILON, vocab, confusionMatrix['count'], detectRealWordError)
+            candidateDict = Candidate_Word_Generate.generateCandidate(word, uniqueChars, confusionMatrix, EPSILON, vocab, confusionMatrix['count'], detectRealWordError, EDIT_DISTANCE)
         logProbs = []
         candidates = []
         if len(candidateDict) == 0:  # 不检测真词时返回为空
@@ -204,6 +206,7 @@ def getCandidateWithProb(words, detectRealWordError=False):
 
 def process_line(line):
     seriesNum, errorNum, rawSentence = line.strip().split('\t')
+    print(seriesNum)
     errorNum = int(errorNum)
     errorNums.append(errorNum)
     # 分词
@@ -230,7 +233,12 @@ def process_line(line):
         _, LMOutput = Sentence_Probability.getSentenceProb(rawSentence)
         smallestProbWords = Sentence_Probability.findSmallestProbWords(LMOutput, realWordsErrorCount)
         for word, prob, index in smallestProbWords:
-            candidateDict = Candidate_Word_Generate.generateCandidate(words[index], uniqueChars, confusionMatrix, EPSILON, vocab, confusionMatrix['count'], True)
+            if word in PUNCTUATION_LIST:  # 分词得到的标点符号进行生成词会出现问题
+                candidateDict = {}
+            else:
+                candidateDict = Candidate_Word_Generate.generateCandidate(words[index], uniqueChars, confusionMatrix, EPSILON, vocab, confusionMatrix['count'], True, EDIT_DISTANCE)
+            if len(candidateDict) == 0:  # 不检测真词时返回为空
+                continue
             logProbs = []
             candidates = []
             for candidate in candidateDict:
@@ -239,7 +247,7 @@ def process_line(line):
                 sentence = ' '.join(wordsCopy).replace(" n't", "n't").replace(" '", "'").replace(" ,", ",").replace(" .", ".").replace(" !", "!").replace(" ?", "?")
                 logP_x_w = candidateDict[candidate]
                 logP_w, _ = Sentence_Probability.getSentenceProb(sentence)
-                print(_)
+                # print(_)
                 logProbs.append(logP_x_w + logP_w)  # 将候选词概率存储
                 candidates.append(candidate)  # 将所有候选词存储
             maxValue = max(logProbs)  # 最大概率候选词
