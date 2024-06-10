@@ -148,13 +148,13 @@ from multiprocessing import freeze_support
 
 # 宏变量
 EPSILON = 0.05  # 总出错概率
-FILE_PATH = 'testdata.txt'
+FILE_PATH = 'test_data.txt'
 OUTPUT_FILE_PATH = 'result.txt'
 VOCABULARY_PATH = 'vocab.txt'
-REAL_WORD_DETECTION = False  # 是否检测真词错误
+REAL_WORD_DETECTION = True  # 是否检测真词错误
 
-# LM_Generate.LMDataConvert()
-# LM_Generate.LMTrain()
+#LM_Generate.LMDataConvert(False)
+#LM_Generate.LMTrain()
 uniqueChars = Confusion_Matrix.createConfusionMatrix('count_1edit.txt', 'ConfusionMatrix')
 uniqueChars.remove('0')
 confusionMatrix = Confusion_Matrix.readConfusionMatrix()
@@ -184,7 +184,7 @@ def getCandidateWithProb(words, detectRealWordError=False):
                 wordsCopy[i] = candidate
                 sentence = ' '.join(wordsCopy).replace(" n't", "n't").replace(" '", "'").replace(" ,", ",").replace(" .", ".").replace(" !", "!").replace(" ?", "?")
                 logP_x_w = candidateDict[candidate]
-                logP_w = Sentence_Probability.getSentenceProb(sentence)
+                logP_w, _ = Sentence_Probability.getSentenceProb(sentence)
                 logProbs.append(logP_x_w + logP_w)  # 将候选词概率存储
                 candidates.append(candidate)  # 将所有候选词存储
             maxValue = max(logProbs)  # 最大概率候选词
@@ -227,10 +227,31 @@ def process_line(line):
         else:
             words[index] = bestWords[index]
     if realWordsErrorCount != 0 and REAL_WORD_DETECTION:
-        sortedArray, bestWords = getCandidateWithProb(words, True)
-        topIndices = [index for index, value in sortedArray[:realWordsErrorCount]]
-        for index in topIndices:
-            words[index] = bestWords[index]
+        _, LMOutput = Sentence_Probability.getSentenceProb(rawSentence)
+        smallestProbWords = Sentence_Probability.findSmallestProbWords(LMOutput, realWordsErrorCount)
+        for word, prob, index in smallestProbWords:
+            candidateDict = Candidate_Word_Generate.generateCandidate(words[index], uniqueChars, confusionMatrix, EPSILON, vocab, confusionMatrix['count'], True)
+            logProbs = []
+            candidates = []
+            for candidate in candidateDict:
+                wordsCopy = words.copy()
+                wordsCopy[index] = candidate
+                sentence = ' '.join(wordsCopy).replace(" n't", "n't").replace(" '", "'").replace(" ,", ",").replace(" .", ".").replace(" !", "!").replace(" ?", "?")
+                logP_x_w = candidateDict[candidate]
+                logP_w, _ = Sentence_Probability.getSentenceProb(sentence)
+                print(_)
+                logProbs.append(logP_x_w + logP_w)  # 将候选词概率存储
+                candidates.append(candidate)  # 将所有候选词存储
+            maxValue = max(logProbs)  # 最大概率候选词
+            maxIndex = logProbs.index(maxValue)  # 找到最大概率值及其索引
+            if word[0].isupper(): # 首字母大写则还原
+                words[index] = candidates[maxIndex].capitalize()  # 将最大概率值候选词加入
+            else:
+                words[index] = candidates[maxIndex]  # 将最大概率值候选词加入
+        # sortedArray, bestWords = getCandidateWithProb(words, True)
+        # topIndices = [index for index, value in sortedArray[:realWordsErrorCount]]
+        # for index in topIndices:
+        #     words[index] = bestWords[index]
     else:
         pass
     processedSentence = ' '.join(words).replace(" n't", "n't").replace(" '", "'").replace(" ,", ",").replace(" .", ".").replace(" !", "!").replace(" ?", "?")

@@ -126,17 +126,11 @@ def wordsInVocab(wordsDict, vocabulary):
 
 def generateCandidate(word, uniqueChars, confusion_matrices, epsilon, vocab, countDict, detectRealWordError=False):
     candidate = {}
-    if detectRealWordError: # 加个检测首字母大写
+    if detectRealWordError: 
         #    wordsDict = edit_distance_2(word, uniqueChars, confusion_matrices, countDict)
         e1, e1Prob = edit_distance_1(word, uniqueChars, confusion_matrices, countDict) # 试一试编辑距离1
         wordsDict = dict(zip(e1, e1Prob))
         candidate = wordsInVocab(wordsDict, vocab)
-        if word.lower() in vocab:
-            # 真词错误
-            candidate.update({word:logSmoothed(1 - epsilon)})
-        else:
-            # 非词错误
-            pass
     else:
         if word.lower() in vocab:
             pass

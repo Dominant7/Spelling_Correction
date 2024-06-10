@@ -1,7 +1,7 @@
 ﻿from nltk import sent_tokenize
 
 
-def LMDataConvert():
+def LMDataConvert(enableStopWords=False):
     import nltk
     from nltk.corpus import reuters
     from nltk.corpus import stopwords
@@ -25,7 +25,10 @@ def LMDataConvert():
     os.makedirs(train_dir, exist_ok=True)
 
     # 获取英语停用词列表
-    stop_words = set(stopwords.words('english'))
+    if enableStopWords:
+        stop_words = set(stopwords.words('english'))
+    else:
+        stop_words = set()
 
     # 创建文件
     with open('LM\\test.txt', 'w', encoding='utf-8') as f:
@@ -68,6 +71,7 @@ def LMTrain():
     import subprocess
     # 构建词汇表
     subprocess.run(['SRILM\\For PC\\ngram-count', '-text', 'LM\\train.txt', '-order', '3', '-write', 'LM\\count.txt'])
+#    subprocess.run(['SRILM\\For PC\\ngram-count', '-text', 'cleaned_ans.txt', '-order', '3', '-write', 'LM\\count.txt'])
     # 训练语言模型
     subprocess.run(['SRILM\\For PC\\ngram-count', '-read', 'LM\\count.txt', '-order', '3', '-lm', 'LM\\train_model.lm', '-interpolate', '-kndiscount'])
 #    subprocess.run(['SRILM\\For PC\\ngram', '-ppl', 'LM\\test_result.txt', '-order', '3', '-lm', 'LM\\train_model.lm', '>', 'LM\\test_result.ppl'])

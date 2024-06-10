@@ -1,2 +1,2 @@
-file LM\test.txt: 14167 sentences, 300544 words, 17895 OOVs
-0 zeroprobs, logprob= -727303.8 ppl= 282.0671 ppl1= 374.2567
+file LM\test.txt: 14168 sentences, 412743 words, 17909 OOVs
+0 zeroprobs, logprob= -871232.9 ppl= 134.9408 ppl1= 160.9089
